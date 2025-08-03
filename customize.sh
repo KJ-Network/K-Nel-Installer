@@ -26,6 +26,15 @@ else
     export boot="/dev/block/bootdevice/by-name/boot$(getprop ro.boot.slot_suffix)"
 fi
 
+# Get dtbo partition name
+if [ ! -e /dev/block/bootdevice/by-name/dtbo* ]; then
+    export dtbo="null"
+elif test -z "$(getprop ro.boot.slot_suffix)"; then
+    export dtbo="/dev/block/bootdevice/by-name/dtbo"
+else
+    export dtbo="/dev/block/bootdevice/by-name/dtbo$(getprop ro.boot.slot_suffix)"
+fi
+
 # Install Kernel
 chmod +x $MODPATH/tools/*
 export PATH="$MODPATH/tools:$PATH"
@@ -54,6 +63,10 @@ ui_print "- Repacking 'Boot' Image..."
 magiskboot repack $MODPATH/boot.img
 ui_print "- Flashing 'Boot' Image..."
 dd if=new-boot.img of=$boot
+if [ -e $MODPATH/dtbo.img ] && [ $dtbo != "null" ]; then
+    ui_print "- dtbo.img detected! Flashing 'Dtbo' Image..."
+    dd if=$MODPATH/dtbo.img of=$dtbo
+fi
 ui_print "- Install Successful!"
 
 ui_print " "
