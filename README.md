@@ -1,5 +1,6 @@
 # Simple Kernel Installer
-###### Install Android Kernel in Recovery/Magisk/KernelSU/APatch/KernelFlasher
+##### Flash Android Kernel in Recovery/Magisk/KernelSU/APatch/KernelFlasher.
+##### SKI Anywhere!
 ---
 * Keep It Simple Stupid.
 ---
