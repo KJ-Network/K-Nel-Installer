@@ -1,84 +1,17 @@
 # Simple Kernel Installer
 # By KeJia
 
-# Get Kernel Name and print
-name=$(grep '^name=' $MODPATH/config.conf | cut -d '=' -f 2)
+# env prepare
+. $MODPATH/tools/env_prepare.sh
 
-ui_print " "
-ui_print "- $name Installer"
-ui_print " "
+# print kernel name as a title
+print_title "$name Installer"
 
-# Get codename and check
-codename=$(grep '^codename=' $MODPATH/config.conf | cut -d '=' -f 2)
+# check codename
+check_devicename
 
-if test -z "$(grep $codename /system/build.prop)"; then 
-    ui_print "- Device is not ' $codename ' , cannot install this kernel."
-    exit 1
-fi
+# Install kernel/dtb/dtbo
+install
 
-# Get boot partition name
-if [ ! -e /dev/block/bootdevice/by-name/boot* ]; then
-    ui_print "- Unsupport Environment!"
-    exit 1
-elif test -z "$(getprop ro.boot.slot_suffix)"; then
-    export boot="/dev/block/bootdevice/by-name/boot"
-else
-    export boot="/dev/block/bootdevice/by-name/boot$(getprop ro.boot.slot_suffix)"
-fi
-
-# Get dtbo partition name
-if [ ! -e /dev/block/bootdevice/by-name/dtbo* ]; then
-    export dtbo="null"
-elif test -z "$(getprop ro.boot.slot_suffix)"; then
-    export dtbo="/dev/block/bootdevice/by-name/dtbo"
-else
-    export dtbo="/dev/block/bootdevice/by-name/dtbo$(getprop ro.boot.slot_suffix)"
-fi
-
-# Install Kernel
-chmod +x $MODPATH/tools/*
-export PATH="$MODPATH/tools:$PATH"
-
-ui_print "- Extracting 'Boot' Image..."
-dd if=$boot of=$MODPATH/boot.img
-ui_print "- Unpacking 'Boot' Image..."
-magiskboot unpack $MODPATH/boot.img
-ui_print "- Spliting The Kernel Package And Uploading The Kernel..."
-if [ -e $MODPATH/Image.gz-dtb ]; then
-    magiskboot split $MODPATH/Image.gz-dtb
-elif [ -e $MODPATH/Image-dtb ]; then
-    magiskboot split $MODPATH/Image-dtb
-elif [ -e $MODPATH/Image.gz ]; then
-    magiskboot decompress $MODPATH/Image.gz kernel
-elif [ -e $MODPATH/Image ]; then
-    mv $MODPATH/Image kernel
-else
-    ui_print "- No kernel Image detected! Install failed!"
-    exit 1
-fi
-if [ -e $MODPATH/*.dtb ]; then
-    mv $MODPATH/*.dtb kernel_dtb
-fi
-ui_print "- Repacking 'Boot' Image..."
-magiskboot repack $MODPATH/boot.img
-ui_print "- Flashing 'Boot' Image..."
-dd if=new-boot.img of=$boot
-if [ -e $MODPATH/dtbo.img ] && [ $dtbo != "null" ]; then
-    ui_print "- dtbo.img detected! Flashing 'Dtbo' Image..."
-    dd if=$MODPATH/dtbo.img of=$dtbo
-fi
-ui_print "- Install Successful!"
-
-ui_print " "
-
-ui_print "- Cleaning GPU cache..."
-find /data/user_de/*/*/*cache/* -iname "*shader*" -exec rm -rf {} +
-find /data/data/* -iname "*shader*" -exec rm -rf {} +
-find /data/data/* -iname "*graphitecache*" -exec rm -rf {} +
-find /data/data/* -iname "*gpucache*" -exec rm -rf {} +
-find /data_mirror/data*/*/*/*/* -iname "*shader*" -exec rm -rf {} +
-find /data_mirror/data*/*/*/*/* -iname "*graphitecache*" -exec rm -rf {} +
-find /data_mirror/data*/*/*/*/* -iname "*gpucache*" -exec rm -rf {} +
-ui_print "- GPU Cache Cleaning Completed."
-
-ui_print " "
+# gpu cache clean
+clean_gpu_cache
