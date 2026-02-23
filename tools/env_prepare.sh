@@ -120,18 +120,11 @@ install() {
         ui_print "- Install Success!"
 }
 
-clean_gpu_cache() {
+clean_dalvik_cache() {
     if $DATA; then
-        ui_print "- Cleaning GPU cache..."
-        find /data/user_de/*/*/*cache/* -iname "*shader*" -exec rm -rf {} +
-        find /data/data/* -iname "*shader*" -exec rm -rf {} +
-        find /data/data/* -iname "*graphitecache*" -exec rm -rf {} +
-        find /data/data/* -iname "*gpucache*" -exec rm -rf {} +
-        find /data_mirror/data*/*/*/*/* -iname "*shader*" -exec rm -rf {} +
-        find /data_mirror/data*/*/*/*/* -iname "*graphitecache*" -exec rm -rf {} +
-        find /data_mirror/data*/*/*/*/* -iname "*gpucache*" -exec rm -rf {} +
-        ui_print "- GPU cache cleaning completed."
+        ui_print "- Cleaning Dalvik cache..."
+        rm -rf /data/dalvik-cache/*
     else
-        ui_print '! /data is not writable! Skipping GPU cache cleaning...'
+        ui_print '! /data is not writable! Skipping Dalvik cache cleaning...'
     fi
 }
