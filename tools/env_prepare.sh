@@ -70,15 +70,6 @@ else
     export boot="/dev/block/bootdevice/by-name/boot$(getprop ro.boot.slot_suffix)"
 fi
 
-# Get dtbo partition name
-if [ ! -e /dev/block/bootdevice/by-name/dtbo* ]; then
-    export dtbo="null"
-elif test -z "$(getprop ro.boot.slot_suffix)"; then
-    export dtbo="/dev/block/bootdevice/by-name/dtbo"
-else
-    export dtbo="/dev/block/bootdevice/by-name/dtbo$(getprop ro.boot.slot_suffix)"
-fi
-
 install() {
     if [ -e $MODPATH/*Image* ] || [ -e $MODPATH/*.dtb ]; then
         ui_print "- Getting 'boot' Image..."
@@ -113,9 +104,9 @@ install() {
             ui_print "! /data is not writable! Skipping backup..."
         fi
     fi
-    if [ -e $MODPATH/*dtbo*.img ] && [ $dtbo != "null" ]; then
+    if [ -e $MODPATH/*dtbo*.img ] && [ -n "$(ls /dev/block/bootdevice/by-name/dtbo*)" ]; then
         ui_print "- Flashing 'dtbo' Image..."
-        dd if=$(find $MODPATH/ -type f -name "*dtbo*.img") of=$dtbo
+        dd if=$(find $MODPATH/ -type f -name "*dtbo*.img") of="/dev/block/bootdevice/by-name/dtbo$(getprop ro.boot.slot_suffix)"
     fi
         ui_print "- Install Success!"
 }
