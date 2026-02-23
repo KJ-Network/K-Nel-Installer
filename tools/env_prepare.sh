@@ -80,42 +80,44 @@ else
 fi
 
 install() {
-    ui_print "- Getting 'boot' Image..."
-    dd if=$boot of=$MODPATH/boot.img
-    ui_print "- Unpacking 'boot' Image..."
-    magiskboot unpack $MODPATH/boot.img
-    if [ -e $MODPATH/*Image*-dtb ]; then
-        ui_print "- Replacing kernel and dtb..."
-        magiskboot split $(find $MODPATH/ -type f -name "*Image*-dtb")
-        DTB=true
-    elif [ -e $MODPATH/Image ]; then
-        ui_print "- Replacing kernel..."
-        mv $MODPATH/Image kernel
-    elif [ -e $MODPATH/*Image* ]; then
-        ui_print "- Replacing kernel..."
-        magiskboot decompress $(find $MODPATH/ -type f -name "*Image*") kernel
+    if [ -e $MODPATH/*Image* ] || [ -e $MODPATH/*.dtb ]; then
+        ui_print "- Getting 'boot' Image..."
+        dd if=$boot of=$MODPATH/boot.img
+        ui_print "- Unpacking 'boot' Image..."
+        magiskboot unpack $MODPATH/boot.img
+        if [ -e $MODPATH/*Image*-dtb ]; then
+            ui_print "- Replacing kernel and dtb..."
+            magiskboot split $(find $MODPATH/ -type f -name "*Image*-dtb")
+            REPLACEDDTB=true
+        elif [ -e $MODPATH/Image ]; then
+            ui_print "- Replacing kernel..."
+            mv $MODPATH/Image kernel
+        elif [ -e $MODPATH/*Image* ]; then
+            ui_print "- Replacing kernel..."
+            magiskboot decompress $(find $MODPATH/ -type f -name "*Image*") kernel
+        fi
+        if [ "$REPLACEDDTB" != "true"  ]; then
+            ui_print "- Replacing dtb..."
+            mv $MODPATH/*.dtb kernel_dtb
+        fi
+        ui_print "- Repacking 'boot' Image..."
+        magiskboot repack $MODPATH/boot.img
+        ui_print "- Flashing 'boot' Image..."
+        dd if=$MODPATH/new-boot.img of=$boot
+        if $DATA; then
+            ui_print "- Backing up 'boot' Image..."
+            rm /data/boot_backup*.img
+            mv $MODPATH/boot.img "/data/boot_backup_$(date +'%Y%m%d_%H%M%S').img"
+            ui_print "- You can find 'boot' backup in /data !"
+        else
+            ui_print "! /data is not writable! Skipping backup..."
+        fi
     fi
-    if [ "$DTB" != "true"  ]; then
-        ui_print "- Replacing dtb..."
-        mv $MODPATH/*.dtb kernel_dtb
-    fi
-    ui_print "- Repacking 'boot' Image..."
-    magiskboot repack $MODPATH/boot.img
-    ui_print "- Flashing 'boot' Image..."
-    dd if=$MODPATH/new-boot.img of=$boot
     if [ -e $MODPATH/*dtbo*.img ] && [ $dtbo != "null" ]; then
         ui_print "- Flashing 'dtbo' Image..."
         dd if=$(find $MODPATH/ -type f -name "*dtbo*.img") of=$dtbo
     fi
-    if $DATA; then
-        ui_print "- Backing up 'boot' Image..."
-        rm /data/boot_backup*.img
-        mv $MODPATH/boot.img "/data/boot_backup_$(date +'%Y%m%d_%H%M%S').img"
-        ui_print "- You can find 'boot' backup in /data !"
-    else
-        ui_print "! /data is not writable! Skipping backup..."
-    fi
-    ui_print "- Install Success!"
+        ui_print "- Install Success!"
 }
 
 clean_gpu_cache() {
