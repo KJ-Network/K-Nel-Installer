@@ -60,9 +60,7 @@ check_devicename() {
 }
 
 # Get boot partition name
-if [ -e /dev/block/bootdevice/by-name/init_boot* ]; then
-    export boot="/dev/block/bootdevice/by-name/init_boot$(getprop ro.boot.slot_suffix)"
-elif [ ! -e /dev/block/bootdevice/by-name/boot* ]; then
+if [ ! -e /dev/block/bootdevice/by-name/boot* ]; then
     abort "! Unsupport Environment!"
 elif test -z "$(getprop ro.boot.slot_suffix)"; then
     export boot="/dev/block/bootdevice/by-name/boot"
