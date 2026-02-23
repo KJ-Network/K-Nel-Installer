@@ -6,6 +6,11 @@ chmod +x $MODPATH/tools/*
 export PATH="$MODPATH/tools:$PATH"
 cd $MODPATH
 
+# self check
+if [ ! -e $MODPATH/*Image* ] && [ ! -e $MODPATH/*.dtb ] && [ ! -e $MODPATH/*dtbo*.img ]; then
+    abort "! kernel/dtb/dtbo not found! This package may be broken!"
+fi
+
 # check data
 DATA=false
 mount /data 2>/dev/null
