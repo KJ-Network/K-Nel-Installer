@@ -6,6 +6,13 @@ chmod +x $MODPATH/tools/*
 export PATH="$MODPATH/tools:$PATH"
 cd $MODPATH
 
+# check data
+DATA=false
+mount /data 2>/dev/null
+if grep ' /data ' /proc/mounts | grep -vq 'tmpfs'; then
+    touch /data/.rw && rm /data/.rw && DATA=true
+fi
+
 # print_title (from magisk)
 print_title() {
     local len line1len line2len bar
@@ -67,20 +74,6 @@ else
     export dtbo="/dev/block/bootdevice/by-name/dtbo$(getprop ro.boot.slot_suffix)"
 fi
 
-# check_data (from magisk)
-check_data() {
-    DATA=false
-    if $BOOTMODE; then
-        DATA=true
-    else
-        mount /data 2>/dev/null
-        if grep ' /data ' /proc/mounts | grep -vq 'tmpfs'; then
-            # Test if data is writable
-            touch /data/.rw && rm /data/.rw && DATA=true
-        fi
-    fi
-}
-
 install() {
     ui_print "- Getting 'boot' Image..."
     dd if=$boot of=$MODPATH/boot.img
@@ -109,7 +102,6 @@ install() {
         ui_print "- Flashing 'dtbo' Image..."
         dd if=$(find $MODPATH/ -type f -name "*dtbo*.img") of=$dtbo
     fi
-    check_data
     if $DATA; then
         ui_print "- Backing up 'boot' Image..."
         rm /data/boot_backup*.img
@@ -122,7 +114,6 @@ install() {
 }
 
 clean_gpu_cache() {
-    check_data
     if $DATA; then
         ui_print "- Cleaning GPU cache..."
         find /data/user_de/*/*/*cache/* -iname "*shader*" -exec rm -rf {} +
