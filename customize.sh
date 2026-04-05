@@ -2,11 +2,11 @@
 # By KeJia
 
 # Kernel Name
-name=Example Kernel
+name=KosminorKernel M1721
 # Device Codename
-devicename1=example1
-devicename2=example2
-devicename3=example3
+devicename1=m1721
+devicename2=m6note
+devicename3=meilannote6
 
 # DO NOT MODIFY THIS PART!
 . $MODPATH/tools/env_prepare.sh
