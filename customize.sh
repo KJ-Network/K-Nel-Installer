@@ -2,11 +2,10 @@
 # By KeJia
 
 # Kernel Name
-name=Example Kernel
+name=KosminorKernel Alioth
 # Device Codename
-devicename1=example1
-devicename2=example2
-devicename3=example3
+devicename1=alioth
+devicename2=aliothin
 
 # DO NOT MODIFY THIS PART!
 . $MODPATH/tools/env_prepare.sh
