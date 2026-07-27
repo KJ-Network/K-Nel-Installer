@@ -46,7 +46,6 @@ check_devicename() {
                     match=1
                     break 2
             fi
-            ui_print "! This device is not '$testname'."
         done
     done
     if [ ! "$match" ]; then
